@@ -11,6 +11,43 @@ def softmax(x):
     exp = np.exp(x - x.max())
     return exp / exp.sum()
 
+def d_tanh(data):
+    # d_tanh([1, 2, 3, 4])
+    # return np.diag(1 / (np.cosh(data) ** 2))
+    return 1 / (np.cosh(data) ** 2)
+
+def d_softmax(data):
+    sm = softmax(data)
+    # 单元对角矩阵 - 行列向量扩充
+    # d_softmax(np.array([1, 2, 3, 4]))
+    return np.diag(sm) - np.outer(sm, sm)
+
+# 验证 d_softmax
+# h = 0.000001 # 逐渐增大或者减小验证收敛性
+# input_len = 4
+# for i in range(input_len):
+#     test_input = np.random.rand(input_len)
+#     dervative = d_softmax(test_input)
+#     value_1=softmax(test_input)
+#     test_input[i] += h
+#     value_2 = softmax(test_input)
+#     # print((value_2 - value_1) / h) # 求导公式 
+#     # print(dervative[i]) # 推出来的公式
+#     print(dervative[i] - ((value_2 - value_1) / h))
+
+# # 验证 d_tanh 
+# h = 0.00001
+# input_len = 4
+# for i in range(input_len):
+#     test_input = np.random.rand(input_len)
+#     dervative = d_tanh(test_input)
+#     value_1 = tanh(test_input)
+#     test_input[i] += h
+#     value_2 = tanh(test_input)
+#     # print((value_2 - value_1) / h) # 求导公式 
+#     # print(dervative[i]) # 推出来的公式
+#     print(dervative[i] - ((value_2 - value_1) / h))
+
 def init_paramters_b(layer): # layer 输入层数
     dist = distribution[layer]['b']
     # 数组的大小是dimensions[layer] = [28 * 28, 10]
@@ -37,12 +74,36 @@ def init_paraments():
         parameter.append(layer_parameter)
     return parameter
 
+# 计算矩阵
 def predict(img, parameters):
     l_0_in = img + parameters[0]['b']
     l_0_out = activation[0](l_0_in)
     l_1_in = np.dot(l_0_out, parameters[1]['w'] + parameters[1]['b'])
     l_1_out = activation[1](l_1_in)
     return l_1_out
+
+# 损失函数
+def sqr_loss(img, lab, parameters):
+    y_pred = predict(img, parameters)
+    y = one_hot[lab];
+    diff = y - y_pred
+    return np.dot(diff, diff) # 公式相等
+
+# 求梯度
+def grad_parameters(img, lab, parameters):
+    l_0_in = img + parameters[0]['b']
+    l_0_out = activation[0](l_0_in)
+    l_1_in = np.dot(l_0_out, parameters[1]['w'] + parameters[1]['b'])
+    l_1_out = activation[1](l_1_in)
+
+    diff = one_hot[lab] - l_1_out;
+    act_1 = np.dot(d_softmax(l_1_in), diff)
+    grad_b_1 = -2 * act_1
+    grad_w_1 = -2 * np.outer(l_0_out, act_1)
+    # 把 tanh 的对角矩阵拆分优化
+    grad_b_0 = -2 * d_softmax(l_0_in) * np.dot(parameters[1]['w'], act_1)
+    return {'b0': grad_b_0, 'b1': grad_b_1, 'w1': grad_w_1}
+
 
 def show_train(index):
     print("lab:", end = ' '), print(train_lab[index])
@@ -71,7 +132,7 @@ distribution = [ # 列表套字典
 parameters = init_paraments()
 
 # 测试正确性
-# print(predict(np.random.rand(784), parameters).argmax())
+# print(predict(np.random.rand(784), parameters))
 
 # 读入测试集
 dataset_path = Path('./MNIST')
@@ -106,11 +167,21 @@ with open(test_lab_path, "rb") as f:
     struct.unpack('>2i', f.read(8))
     test_lab = np.fromfile(f, dtype = np.uint8)
 
-show_train(np.random.randint(train_num))
-show_valid(np.random.randint(valid_num))
-show_test(np.random.randint(test_num))
+# show_train(np.random.randint(train_num))
+# show_valid(np.random.randint(valid_num))
+# show_test(np.random.randint(test_num))
 
+one_hot = np.identity(dimensions[-1]) # 10 * 10 的单位矩阵(对角线都是 1)
 
+# print(sqr_loss(train_img[0], train_lab[0], parameters))
 
-
-
+h = 0.000001
+# 验证 b1
+for i in range(10):
+    img_i = np.random.randint(50000)
+    test_parameters = init_paraments()
+    derivative = grad_parameters(train_img[img_i], train_lab[img_i], test_parameters)['b1']
+    value1 = sqr_loss(train_img[img_i], train_lab[img_i], test_parameters)
+    test_parameters[1]['b'][i] += h
+    value2 = sqr_loss(train_img[img_i], train_lab[img_i], test_parameters)
+    print(derivative[i] - ((value1 - value2) / h))
