@@ -78,7 +78,7 @@ def init_paraments():
 def predict(img, parameters):
     l_0_in = img + parameters[0]['b']
     l_0_out = activation[0](l_0_in)
-    l_1_in = np.dot(l_0_out, parameters[1]['w'] + parameters[1]['b'])
+    l_1_in = np.dot(l_0_out, parameters[1]['w']) + parameters[1]['b']
     l_1_out = activation[1](l_1_in)
     return l_1_out
 
@@ -176,15 +176,42 @@ with open(test_lab_path, "rb") as f:
 one_hot = np.identity(dimensions[-1]) # 10 * 10 的单位矩阵(对角线都是 1)
 
 # print(sqr_loss(train_img[0], train_lab[0], parameters))
-# print(grad_parameters(train_img[0], train_lab[0], init_paraments())['w1'])
+# print(grad_parameters(train_img[2],train_lab[2],parameters))
 
-h = 0.01
-# 验证 b1
-for i in range(10):
-    img_i = np.random.randint(50000)
-    test_parameters = init_paraments()
-    derivative = grad_parameters(train_img[img_i], train_lab[img_i], test_parameters)['b0']
-    value1 = sqr_loss(train_img[img_i], train_lab[img_i], test_parameters)
-    test_parameters[0]['b'][i] += h
-    value2 = sqr_loss(train_img[img_i], train_lab[img_i], test_parameters)
-    print(derivative[i] - ((value2 - value1) / h))
+# # 验证 b1
+# h = 0.00001
+# for i in range(10):
+#     img_i = np.random.randint(50000)
+#     test_parameters = init_paraments()
+#     derivative = grad_parameters(train_img[img_i], train_lab[img_i], test_parameters)['b1']
+#     value1 = sqr_loss(train_img[img_i], train_lab[img_i], test_parameters)
+#     test_parameters[1]['b'][i] += h
+#     value2 = sqr_loss(train_img[img_i], train_lab[img_i], test_parameters)
+#     print(derivative[i] - ((value2 - value1) / h))
+
+# 验证 w1
+# grad_list = []
+# h = 0.00001
+# for i in range(784):
+#     for j in range(10):
+#         img_i=np.random.randint(train_num)
+#         test_parameters = parameters
+#         derivative=grad_parameters(train_img[img_i],train_lab[img_i],test_parameters)['w1']
+#         value1=sqr_loss(train_img[img_i],train_lab[img_i],test_parameters)
+#         test_parameters[1]['w'][i][j] += h
+#         value2=sqr_loss(train_img[img_i],train_lab[img_i],test_parameters)
+#         grad_list.append(derivative[i][j] - (value2 - value1) / h)
+# print(np.abs(grad_list).max())
+
+# # 验证b0
+# grad_list = []
+# h = 0.01
+# for i in range(784):
+#     img_i=np.random.randint(train_num)
+#     test_parameters = parameters
+#     derivative=grad_parameters(train_img[img_i],train_lab[img_i],test_parameters)['b0']
+#     value1=sqr_loss(train_img[img_i],train_lab[img_i],test_parameters)
+#     test_parameters[0]['b'][i] += h
+#     value2=sqr_loss(train_img[img_i],train_lab[img_i],test_parameters)
+#     grad_list.append(derivative[i] - (value2 - value1) / h)
+# print(np.abs(grad_list).max())
