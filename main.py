@@ -98,10 +98,12 @@ def grad_parameters(img, lab, parameters):
 
     diff = one_hot[lab] - l_1_out;
     act_1 = np.dot(d_softmax(l_1_in), diff)
+
+    # 把 tanh 的对角矩阵拆分优化
+    grad_b_0 = -2 * d_tanh(l_0_in) * np.dot(parameters[1]['w'], act_1)
     grad_b_1 = -2 * act_1
     grad_w_1 = -2 * np.outer(l_0_out, act_1)
-    # 把 tanh 的对角矩阵拆分优化
-    grad_b_0 = -2 * d_softmax(l_0_in) * np.dot(parameters[1]['w'], act_1)
+    # print(l_0_out)
     return {'b0': grad_b_0, 'b1': grad_b_1, 'w1': grad_w_1}
 
 
@@ -174,14 +176,15 @@ with open(test_lab_path, "rb") as f:
 one_hot = np.identity(dimensions[-1]) # 10 * 10 的单位矩阵(对角线都是 1)
 
 # print(sqr_loss(train_img[0], train_lab[0], parameters))
+# print(grad_parameters(train_img[0], train_lab[0], init_paraments())['w1'])
 
-h = 0.000001
+h = 0.01
 # 验证 b1
 for i in range(10):
     img_i = np.random.randint(50000)
     test_parameters = init_paraments()
-    derivative = grad_parameters(train_img[img_i], train_lab[img_i], test_parameters)['b1']
+    derivative = grad_parameters(train_img[img_i], train_lab[img_i], test_parameters)['b0']
     value1 = sqr_loss(train_img[img_i], train_lab[img_i], test_parameters)
-    test_parameters[1]['b'][i] += h
+    test_parameters[0]['b'][i] += h
     value2 = sqr_loss(train_img[img_i], train_lab[img_i], test_parameters)
-    print(derivative[i] - ((value1 - value2) / h))
+    print(derivative[i] - ((value2 - value1) / h))
