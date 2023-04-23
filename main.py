@@ -3,7 +3,10 @@ import math
 import struct
 import numpy as np
 from pathlib import Path # 处理路径
+from tqdm.notebook import tqdm
 import matplotlib.pyplot as plt
+
+import Activation
 
 def tanh(x):
     return np.tanh(x)
@@ -29,7 +32,7 @@ def d_softmax(data):
 # for i in range(input_len):
 #     test_input = np.random.rand(input_len)
 #     dervative = d_softmax(test_input)
-#     value_1=softmax(test_input)
+#     value_1 = softmax(test_input)
 #     test_input[i] += h
 #     value_2 = softmax(test_input)
 #     # print((value_2 - value_1) / h) # 求导公式
@@ -99,7 +102,7 @@ def grad_parameters(img, lab, parameters):
 
     diff = one_hot[lab] - l_1_out;
     act_1 = np.dot(d_softmax(l_1_in), diff)
-
+    
     # 把 tanh 的对角矩阵拆分优化
     grad_b_0 = -2 * d_tanh(l_0_in) * np.dot(parameters[1]['w'], act_1)
     grad_b_1 = -2 * act_1
@@ -112,27 +115,37 @@ def show_train(index):
     plt.imshow(train_img[index].reshape(28, 28), cmap = 'gray')
     plt.show()
 
+def show_valid(index):
+    print("lab:", end=' '), print(valid_lab[index])
+    plt.imshow(valid_img[index].reshape(28, 28), cmap='gray')
+    plt.show()
+
 def show_test(index):
     print("lab:", end = ' '), print(test_lab[index])
     plt.imshow(test_img[index].reshape(28, 28), cmap = 'gray')
     plt.show()
 
-def show_valid(index):
-    print("lab:", end=' '), print(valid_lab[index])
-    plt.imshow(valid_img[index].reshape(28, 28), cmap='gray')
-    plt.show()
 
 # 验证测试集
 def valid_loss(parameters):
     loss_accu = 0 # 偏差值的累加
     for img_i in range(valid_num): # 测试集的数量 10000
         loss_accu += sqr_loss(valid_img[img_i], valid_lab[img_i], parameters)
-    return loss_accu
+    return loss_accu / (valid_num / 10000)
 
 # valid 集合的验证 求 valid 集合的准确率
 def valid_accuracy(parameters):
     correct = [predict(valid_img[img_i], parameters).argmax() == valid_lab[img_i] for img_i in range(valid_num)]
     # print("validation accuracy: {}".format(correct.count(True) / len(correct)))
+    return correct.count(True) / len(correct)
+
+def train_loss(parameters):
+    loss_accu=0
+    for img_i in range(train_num):
+        loss_accu += sqr_loss(train_img[img_i],train_lab[img_i],parameters)
+    return loss_accu / (train_num / 10000)
+def train_accuracy(parameters):
+    correct = [predict(train_img[img_i],parameters).argmax()==train_lab[img_i] for img_i in range(train_num)]
     return correct.count(True) / len(correct)
 
 # 分组训练减少时间
@@ -183,13 +196,13 @@ test_num = 10000 # 只能看到结果的数据
 with open(train_img_path, "rb") as f:
     struct.unpack('>4i', f.read(16))
     # train_img = np.fromfile(f, dtype = np.uint8).reshape(-1, 28 * 28)
-    tmp_img = np.fromfile(f, dtype = np.uint8).reshape(-1, 28 * 28)
+    tmp_img = np.fromfile(f, dtype = np.uint8).reshape(-1, 28 * 28) / 255 # 防止二值化 / 255 -> 灰度最大值
     train_img = tmp_img[:train_num]
     valid_img = tmp_img[train_num:]
 
 with open(test_img_path, "rb") as f:
     struct.unpack('>4i', f.read(16))
-    test_img = np.fromfile(f, dtype = np.uint8).reshape(-1, 28 * 28)
+    test_img = np.fromfile(f, dtype = np.uint8).reshape(-1, 28 * 28) / 255
 
 with open(train_lab_path, "rb") as f:
     struct.unpack('>2i', f.read(8))
@@ -206,7 +219,7 @@ with open(test_lab_path, "rb") as f:
 # show_valid(np.random.randint(valid_num))
 # show_test(np.random.randint(test_num))
 
-one_hot = np.identity(dimensions[-1]) # 10 * 10 的单位矩阵(对角线都是 1)
+one_hot = np.identity(dimensions[-1]) # 10 * 10 的单位矩阵(对角线都是 1) # python 中 -1 会回环
 
 # print(sqr_loss(train_img[0], train_lab[0], parameters))
 # print(grad_parameters(train_img[2],train_lab[2],parameters))
@@ -252,15 +265,30 @@ one_hot = np.identity(dimensions[-1]) # 10 * 10 的单位矩阵(对角线都是 
 # print(valid_accuracy(parameters))
 
 batch_size = 100 # 100 组
+current_epoch = 0
+train_loss_list = []
+valid_loss_list = []
+train_accu_list = []
+valid_accu_list = []
 # print(train_batch(0, parameters)['w1'])
 # print(parameters)
 # print(combine_parameters(parameters, train_batch(0, parameters), 1))
 
 print(valid_accuracy(parameters)) # 之前的正确率
 # 训练
-for i in range(train_num // batch_size):
-    if (i % 100 == 99):
-        print("runing batch {} / {}".format(i + 1, train_num // batch_size))
-    grad_tmp = train_batch(i, parameters)
-    parameters = combine_parameters(parameters, grad_tmp, 1)
+epoch_num = 10
+for epoch in range(epoch_num):
+    for i in range(train_num // batch_size):
+        if (i % 100 == 99):
+            print("runing batch {} / {}".format(i + 1, train_num // batch_size))
+        grad_tmp = train_batch(i, parameters) # 求现在的梯度
+        parameters = combine_parameters(parameters, grad_tmp, 1)
+    current_epoch += 1
+    train_loss_list.append(train_loss(parameters))
+    train_accu_list.append(train_accuracy(parameters))
+    valid_loss_list.append(valid_loss(parameters))
+    valid_accu_list.append(valid_accuracy(parameters))
 print(valid_accuracy(parameters)) # 训练之后的正确率
+print(parameters)
+# print(train_loss(parameters))
+
