@@ -2,24 +2,29 @@ import copy
 import math
 import struct
 import numpy as np
+from numba import jit
 from pathlib import Path # 处理路径
-from tqdm.notebook import tqdm
 import matplotlib.pyplot as plt
 
 import Activation
+from ProgressBar import ProgressBar
 
+@jit(nopython=True)
 def tanh(x):
     return np.tanh(x)
 
+@jit(nopython=True)
 def softmax(x):
     exp = np.exp(x - x.max())
     return exp / exp.sum()
 
+@jit(nopython=True)
 def d_tanh(data):
     # d_tanh([1, 2, 3, 4])
     # return np.diag(1 / (np.cosh(data) ** 2))
     return 1 / (np.cosh(data) ** 2)
 
+@jit(nopython=True)
 def d_softmax(data):
     sm = softmax(data)
     # 单元对角矩阵 - 行列向量扩充
@@ -144,6 +149,7 @@ def train_loss(parameters):
     for img_i in range(train_num):
         loss_accu += sqr_loss(train_img[img_i],train_lab[img_i],parameters)
     return loss_accu / (train_num / 10000)
+
 def train_accuracy(parameters):
     correct = [predict(train_img[img_i],parameters).argmax()==train_lab[img_i] for img_i in range(train_num)]
     return correct.count(True) / len(correct)
@@ -276,11 +282,16 @@ valid_accu_list = []
 
 print(valid_accuracy(parameters)) # 之前的正确率
 # 训练
-epoch_num = 10
+epoch_num = 2
+# 进度条
+total_steps = train_num // batch_size * epoch_num
+progress_bar = ProgressBar(total_steps)
+# 开始训练
 for epoch in range(epoch_num):
     for i in range(train_num // batch_size):
-        if (i % 100 == 99):
-            print("runing batch {} / {}".format(i + 1, train_num // batch_size))
+        # if (i % 100 == 99):
+        #     print("runing batch {} / {}".format(i + 1, train_num // batch_size))
+        progress_bar.update(epoch * (train_num // batch_size) + i + 1)
         grad_tmp = train_batch(i, parameters) # 求现在的梯度
         parameters = combine_parameters(parameters, grad_tmp, 1)
     current_epoch += 1
@@ -288,7 +299,9 @@ for epoch in range(epoch_num):
     train_accu_list.append(train_accuracy(parameters))
     valid_loss_list.append(valid_loss(parameters))
     valid_accu_list.append(valid_accuracy(parameters))
+# progress_bar.clear()
+print("")
 print(valid_accuracy(parameters)) # 训练之后的正确率
-print(parameters)
+# print(parameters)
 # print(train_loss(parameters))
 

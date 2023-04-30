@@ -1,10 +1,10 @@
-# Neural-Network
-
-Handwritten neural network implementation using numpy
-
 ## 深度学习入门 : 基于Python的理论与实现
 
-
+```bash
+conda install matplotlib pathlib copy struct numba
+pip uninstall Pillow
+pip install Pillow -i https://pypi.tuna.tsinghua.edu.cn/simple some-package
+```
 
 ### 感知机
 
@@ -4533,9 +4533,9 @@ def numerical_diff(f, x):
 
 实际上，误差小到基本上可以认为它们是相等的
 
+
+
 **偏导数**
-
-
 
 ```python
 def fun(x):
@@ -4588,13 +4588,13 @@ $=-2(y_0-y_{pred_0})\sum\limits_{m=1}^{1\to m}((\partial_m (A_{2,0}(\vec{l_0}\ti
 
 为什么下面这步的 $m\to i$ 因为如果 $m\neq i$ 那么后面的方程都是变量 $=0$ 没有意义
 
-$=-2(y_0-y_{pred_0})\partial_i A_{2,0}(\vec{l_0}\times w_{1}\times\vec{b_{1}})$
+$=-2(y_0-y_{pred_0})\partial_i A_{2,0}(\vec{l_0}\times w_{1}+\vec{b_{1}})$
 
 为什么是 $b_1$ 的原因是因为这部分不求导所以不用分开，复合函数的内导数作为定值
 
-$\frac{\partial L_1}{b_{1_i}}=-2(y_0-y_{pred_1})\partial_i A_{2,1}(\vec{l_0}\times w_{1}\times\vec{b_{1}})$
+$\frac{\partial L_1}{b_{1_i}}=-2(y_0-y_{pred_1})\partial_i A_{2,1}(\vec{l_0}\times w_{1}+\vec{b_{1}})$
 
-$\frac{\partial L}{b_{1_i}}=-2(\vec y_0-\vec y_{pred})\partial_i A_{2}(\vec{l_0}\times w_{1}\times\vec{b_{1}})$
+$\frac{\partial L}{b_{1_i}}=-2(\vec y_0-\vec y_{pred})\partial_i A_{2}(\vec{l_0}\times w_{1}+\vec{b_{1}})$
 
 
 
@@ -4606,7 +4606,7 @@ $\frac{\partial L}{w_{1_{i,j}}}=-2(\vec y_0-\vec y_{pred})(\partial_j (A_{2}(\ve
 
 
 
-$\frac{\partial L_0}{b_{0_i}}=-2(y_0-y_{pred_0})\sum\limits_{m=1}^{1\to m}\partial_m A_{2,0}(\vec{l_0}\times w_{1}+\vec{b_{1}})\frac{\partial}{b_{1_i}}(\vec{l_0}\times w_{1_m}+\vec{b_{1_m}})$
+$\frac{\partial L_0}{b_{0_i}}=-2(y_0-y_{pred_0})\sum\limits_{m=1}^{1\to m}\partial_m A_{2,0}(\vec{l_0}\times w_{1}+\vec{b_{1}})\frac{\partial}{b_{0_i}}(\vec{l_0}\times w_{1_m}+\vec{b_{1_m}})$
 
 $=-2(y_0-y_{pred_0})\sum\limits_{m=1}^{1\to m}\partial_m A_{2,0}(\frac{\partial}{\partial b_{0_i}} l_0 w_1)_m$
 
@@ -4616,7 +4616,7 @@ $=-2(y_0-y_{pred_0})\sum\limits_{m=1}^{1\to m}\partial_m A_{2,0}(w_1\partial_iA_
 
 $=-2(y_0-y_{pred_0})(\partial_iA_1~w_1~\vec {\partial}A_{2,0})$
 
-$\frac{\part L}{b_{0_i}}=-2(\vec y_0-\vec y_{pred})(\partial_iA_1~w_1~\vec {\partial}A_{2,0})$
+$\frac{\partial L}{b_{0_i}}=-2(\vec y_0-\vec y_{pred})(\partial_iA_1~w_1~\vec {\partial}A_{2,0})$
 
 
 
@@ -4624,7 +4624,7 @@ $\frac{\part L}{b_{0_i}}=-2(\vec y_0-\vec y_{pred})(\partial_iA_1~w_1~\vec {\par
 
 $tanh'=\frac{1}{cosh^2x}$
 
-$\part_iA_1=$ $$\begin{pmatrix}
+$\partial_iA_1=$ $$\begin{pmatrix}
 \frac{1}{cosh^2x_1}&...&0\\
 ...&\frac{1}{cosh^2x_i}&...\\
 0&0&\frac{1}{cosh^2x_n}\\
@@ -4634,7 +4634,7 @@ $\part_iA_1=$ $$\begin{pmatrix}
 
 $softmax_i(x)={e^{x_i}}/{\sum\limits_{m}e^{x_m}}$
 
-$\part /\part x_i(softmax_j(x))=(\delta_{i,j}e^{x_i}(\sum\limits_{m}e^{m}))-e^{x_i}e^{x_j}/(\sum\limits_{m}e^{m})^2$
+$\partial /\partial x_i(softmax_j(x))=(\delta_{i,j}e^{x_i}(\sum\limits_{m}e^{m}))-e^{x_i}e^{x_j}/(\sum\limits_{m}e^{m})^2$
 $$
 \delta_{i,j}e^{x_i}=\left\{
 \begin{array}{ll}
@@ -4648,7 +4648,7 @@ $=\delta_{i,j}softmax_i(x)-softmax_i(x)softmax_j(x)$
 
 ##### 结论
 
-$\frac{\part L}{b_{0_i}}=-2(\vec y_0-\vec y_{pred})(\partial_iA_1~w_1~\vec {\partial}A_{2,0})$
+$\frac{\partial L}{b_{0_i}}=-2(\vec y_0-\vec y_{pred})(\partial_iA_1~w_1~\vec {\partial}A_{2,0})$
 
 $\frac{\partial L}{b_{1_i}}=-2(\vec y_0-\vec y_{pred})\partial_i A_{2}(\vec{l_0}\times w_{1}\times\vec{b_{1}})$
 
