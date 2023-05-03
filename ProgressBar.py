@@ -9,3 +9,4 @@ class ProgressBar:
         percentage = round(100.0 * current_step / float(self.total_steps), 1)
         status = "\033[32mComplete\033[0m" if current_step == self.total_steps else "\033[31mProgress\033[0m"
         print('\r[{}] {}% {}'.format(bar, percentage, status), end='')
+    

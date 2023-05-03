@@ -1,9 +1,12 @@
 ## 深度学习入门 : 基于Python的理论与实现
 
 ```bash
+python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade pip
 conda install matplotlib pathlib copy struct numba
 pip uninstall Pillow
 pip install Pillow -i https://pypi.tuna.tsinghua.edu.cn/simple some-package
+conda install jupyter notebook
+python -m pip install ptyprocess ipykernel pyzmq -U --force-reinstall -i https://pypi.tuna.tsinghua.edu.cn/simple some-package
 ```
 
 ### 感知机

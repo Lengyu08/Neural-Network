@@ -1,30 +1,30 @@
 import copy
 import math
+import time
 import struct
+
 import numpy as np
-from numba import jit
-from pathlib import Path # 处理路径
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt     # 绘图
+
+from numba import njit              # 加速 cpu
+from numba import cuda              # 加速 gpu(cuda)
+from pathlib import Path            # 处理路径
 
 import Activation
-from ProgressBar import ProgressBar
+import ProgressBar
 
-@jit(nopython=True)
 def tanh(x):
     return np.tanh(x)
 
-@jit(nopython=True)
 def softmax(x):
     exp = np.exp(x - x.max())
     return exp / exp.sum()
 
-@jit(nopython=True)
 def d_tanh(data):
     # d_tanh([1, 2, 3, 4])
     # return np.diag(1 / (np.cosh(data) ** 2))
     return 1 / (np.cosh(data) ** 2)
 
-@jit(nopython=True)
 def d_softmax(data):
     sm = softmax(data)
     # 单元对角矩阵 - 行列向量扩充
@@ -154,6 +154,11 @@ def train_accuracy(parameters):
     correct = [predict(train_img[img_i],parameters).argmax()==train_lab[img_i] for img_i in range(train_num)]
     return correct.count(True) / len(correct)
 
+def test_accuracy(parameters):
+    correct = [predict(test_img[img_i], parameters).argmax() == test_lab[img_i] for img_i in range(test_num)]
+    # print("validation accuracy: {}".format(correct.count(True) / len(correct)))
+    return correct.count(True) / len(correct)
+
 # 分组训练减少时间
 def train_batch(current_batch, parameters):
     # 集合梯度初始化
@@ -276,16 +281,15 @@ train_loss_list = []
 valid_loss_list = []
 train_accu_list = []
 valid_accu_list = []
-# print(train_batch(0, parameters)['w1'])
-# print(parameters)
-# print(combine_parameters(parameters, train_batch(0, parameters), 1))
 
-print(valid_accuracy(parameters)) # 之前的正确率
+print("训练集的正确率: {}", format(test_accuracy(parameters))) # 训练之后的正确率
+print("测试集的正确率: {}", format(valid_accuracy(parameters))) # 训练之后的正确率
 # 训练
 epoch_num = 2
 # 进度条
 total_steps = train_num // batch_size * epoch_num
-progress_bar = ProgressBar(total_steps)
+progress_bar = ProgressBar.ProgressBar(total_steps)
+
 # 开始训练
 for epoch in range(epoch_num):
     for i in range(train_num // batch_size):
@@ -299,9 +303,6 @@ for epoch in range(epoch_num):
     train_accu_list.append(train_accuracy(parameters))
     valid_loss_list.append(valid_loss(parameters))
     valid_accu_list.append(valid_accuracy(parameters))
-# progress_bar.clear()
 print("")
-print(valid_accuracy(parameters)) # 训练之后的正确率
-# print(parameters)
-# print(train_loss(parameters))
-
+print("训练集的正确率: {}", format(test_accuracy(parameters))) # 训练之后的正确率
+print("测试集的正确率: {}", format(valid_accuracy(parameters))) # 训练之后的正确率
