@@ -275,34 +275,39 @@ one_hot = np.identity(dimensions[-1]) # 10 * 10 的单位矩阵(对角线都是 
 # print(valid_loss(parameters))
 # print(valid_accuracy(parameters))
 
-batch_size = 100 # 100 组
-current_epoch = 0
-train_loss_list = []
-valid_loss_list = []
-train_accu_list = []
-valid_accu_list = []
+# batch_size = 100 # 100 组
+# current_epoch = 0
+# train_loss_list = []
+# valid_loss_list = []
+# train_accu_list = []
+# valid_accu_list = []
 
-print("训练集的正确率: {}", format(test_accuracy(parameters))) # 训练之后的正确率
-print("测试集的正确率: {}", format(valid_accuracy(parameters))) # 训练之后的正确率
-# 训练
-epoch_num = 2
-# 进度条
-total_steps = train_num // batch_size * epoch_num
-progress_bar = ProgressBar.ProgressBar(total_steps)
+# print("训练集的正确率: {}", format(test_accuracy(parameters))) # 训练之后的正确率
+# print("测试集的正确率: {}", format(valid_accuracy(parameters))) # 训练之后的正确率
+# # 训练
+# epoch_num = 2
+# # 进度条
+# total_steps = train_num // batch_size * epoch_num
+# progress_bar = ProgressBar.ProgressBar(total_steps)
 
-# 开始训练
-for epoch in range(epoch_num):
-    for i in range(train_num // batch_size):
-        # if (i % 100 == 99):
-        #     print("runing batch {} / {}".format(i + 1, train_num // batch_size))
-        progress_bar.update(epoch * (train_num // batch_size) + i + 1)
-        grad_tmp = train_batch(i, parameters) # 求现在的梯度
-        parameters = combine_parameters(parameters, grad_tmp, 1)
-    current_epoch += 1
-    train_loss_list.append(train_loss(parameters))
-    train_accu_list.append(train_accuracy(parameters))
-    valid_loss_list.append(valid_loss(parameters))
-    valid_accu_list.append(valid_accuracy(parameters))
-print("")
-print("训练集的正确率: {}", format(test_accuracy(parameters))) # 训练之后的正确率
-print("测试集的正确率: {}", format(valid_accuracy(parameters))) # 训练之后的正确率
+# # 开始训练
+# for epoch in range(epoch_num):
+#     for i in range(train_num // batch_size):
+#         # if (i % 100 == 99):
+#         #     print("runing batch {} / {}".format(i + 1, train_num // batch_size))
+#         progress_bar.update(epoch * (train_num // batch_size) + i + 1)
+#         grad_tmp = train_batch(i, parameters) # 求现在的梯度
+#         parameters = combine_parameters(parameters, grad_tmp, 1)
+#     current_epoch += 1
+#     train_loss_list.append(train_loss(parameters))
+#     train_accu_list.append(train_accuracy(parameters))
+#     valid_loss_list.append(valid_loss(parameters))
+#     valid_accu_list.append(valid_accuracy(parameters))
+# print("")
+# print("训练集的正确率: {}", format(test_accuracy(parameters))) # 训练之后的正确率
+# print("测试集的正确率: {}", format(valid_accuracy(parameters))) # 训练之后的正确率
+
+# show_test(3)
+img_input = np.array(test_img[3], dtype = float)
+print(test_lab[3])
+np.savetxt("./input.txt", img_input, fmt="%f")
