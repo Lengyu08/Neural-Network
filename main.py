@@ -307,7 +307,7 @@ one_hot = np.identity(dimensions[-1]) # 10 * 10 的单位矩阵(对角线都是 
 # print("训练集的正确率: {}", format(test_accuracy(parameters))) # 训练之后的正确率
 # print("测试集的正确率: {}", format(valid_accuracy(parameters))) # 训练之后的正确率
 
-# show_test(3)
-img_input = np.array(test_img[3], dtype = float)
-print(test_lab[3])
-np.savetxt("./input.txt", img_input, fmt="%f")
+show_test(4)
+# print("lab:", end = ' '), print(test_lab[4])
+# img_input = np.array(test_img[4], dtype = float)
+# np.savetxt("./input.txt", img_input, fmt="%f")
